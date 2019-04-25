@@ -34,7 +34,7 @@ class GithubMetricsController < ApplicationController
       hyperlink_data["repository_name"] = submission_hyperlink_tokens.pop
       hyperlink_data["owner_name"] = submission_hyperlink_tokens.pop
       github_data = get_pull_request_details(hyperlink_data)
-      @github_metrics_data[:head_refs[hyperlink_data["pull_request_number"]]] = {
+      @head_refs[hyperlink_data["pull_request_number"]] = {
           head_commit: github_data["data"]["repository"]["pullRequest"]["headRefOid"],
           owner: hyperlink_data["owner_name"],
           repository: hyperlink_data["repository_name"]
@@ -76,7 +76,7 @@ class GithubMetricsController < ApplicationController
   end
 
   def retrieve_check_run_statuses
-    @github_metrics_data[:head_refs].each do |pull_number, pr_object|
+    @head_refs.each do |pull_number, pr_object|
       @check_statuses[pull_number] = get_statuses_for_pull_request(pr_object)
     end
   end
@@ -90,8 +90,7 @@ class GithubMetricsController < ApplicationController
     end
 
     @github_metrics_data = {
-        :head_refs => {}, :total_additions => 0, :total_deletions => 0,
-        :total_commits => 0, :total_files_changed => 0
+        :total_additions => 0, :total_deletions => 0,:total_commits => 0, :total_files_changed => 0
     }
 
  #   @github_metrics_data = {
@@ -99,14 +98,15 @@ class GithubMetricsController < ApplicationController
  #       :total_commits => 0, :total_files_changed => 0, :merge_status => {}, :check_statuses => {}
  #  }
 
-    #@head_refs = {}
+
     #@total_additions = 0
     #@total_deletions = 0
     #@total_commits = 0
     #@total_files_changed = 0
+    @head_refs = {}
+    @parsed_data = {}
     @merge_status = {}
     @check_statuses = {}
-    @parsed_data = {}
     @authors = {}
     @dates = {}
 
