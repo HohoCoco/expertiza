@@ -77,7 +77,7 @@ class GithubMetricsController < ApplicationController
 
   def retrieve_check_run_statuses
     @github_metrics_data[:head_refs].each do |pull_number, pr_object|
-      @check_statuses[pull_number] = get_statuses_for_pull_request(pr_object)
+      @github_metrics_data[:check_statuses[pull_number]] = get_statuses_for_pull_request(pr_object)
     end
   end
 
@@ -90,24 +90,26 @@ class GithubMetricsController < ApplicationController
     end
 
     @github_metrics_data = {
-        :head_refs =>{}
+        :head_refs => {}, :parsed_data => {}, :total_additions => 0, :total_deletions => 0,
+        :total_commits => 0, :total_files_changed => 0, :merge_status => {}
     }
 
-   # @github_metrics_data = {
-   #     :head_refs =>{}, :parsed_data => {}, :authors => {}, :dates => {}, :total_additions => 0, :total_deletions => 0,
-   #     :total_commits => 0, :total_files_changed => 0, :merge_status => {}, :check_statuses => {}
-   #}
+ #   @github_metrics_data = {
+ #       :head_refs =>{}, :parsed_data => {}, :authors => {}, :dates => {}, :total_additions => 0, :total_deletions => 0,
+ #       :total_commits => 0, :total_files_changed => 0, :merge_status => {}, :check_statuses => {}
+ #  }
 
-   # @head_refs = {}
-    @parsed_data = {}
+    #@head_refs = {}
+    #@parsed_data = {}
+    #@total_additions = 0
+    #@total_deletions = 0
+    #@total_commits = 0
+    #@total_files_changed = 0
+    #@merge_status = {}
+    #@check_statuses = {}
+
     @authors = {}
     @dates = {}
-    @total_additions = 0
-    @total_deletions = 0
-    @total_commits = 0
-    @total_files_changed = 0
-    @merge_status = {}
-    @check_statuses = {}
 
     @token = session["github_access_token"]
 
@@ -174,12 +176,12 @@ class GithubMetricsController < ApplicationController
   def process_github_authors_and_dates(author_name, commit_date)
     @authors[author_name] ||= 1
     @dates[commit_date] ||= 1
-    @parsed_data[author_name] ||= {}
-    @parsed_data[author_name][commit_date] = if @parsed_data[author_name][commit_date]
-                                               @parsed_data[author_name][commit_date] + 1
-                                             else
-                                               1
-                                             end
+    @github_metrics_data[:parsed_data[author_name]] ||= {}
+    @github_metrics_data[:parsed_data[author_name][commit_date]] = if @github_metrics_data[:parsed_data[author_name][commit_date]]
+                                                                     @github_metrics_data[:parsed_data[author_name][commit_date]] + 1
+                                                                   else
+                                                                     1
+                                                                   end
   end
 
   def parse_github_pull_request_data(github_data)
@@ -221,18 +223,18 @@ class GithubMetricsController < ApplicationController
 
   def organize_commit_dates
     @dates.each_key do |date|
-      @parsed_data.each_value do |commits|
+      @github_metrics_data[:parsed_data].each_value do |commits|
         commits[date] ||= 0
       end
     end
-    @parsed_data.each {|author, commits| @parsed_data[author] = Hash[commits.sort_by {|date, _commit_count| date }] }
+    @github_metrics_data[:parsed_data].each {|author, commits| @github_metrics_data[:parsed_data[author]] = Hash[commits.sort_by {|date, _commit_count| date }] }
   end
 
   def team_statistics(github_data)
-    @total_additions += github_data["data"]["repository"]["pullRequest"]["additions"]
-    @total_deletions += github_data["data"]["repository"]["pullRequest"]["deletions"]
-    @total_files_changed += github_data["data"]["repository"]["pullRequest"]["changedFiles"]
-    @total_commits += github_data["data"]["repository"]["pullRequest"]["commits"]["totalCount"]
+    @github_metrics_data[:total_additions] += github_data["data"]["repository"]["pullRequest"]["additions"]
+    @github_metrics_data[:total_deletions] += github_data["data"]["repository"]["pullRequest"]["deletions"]
+    @github_metrics_data[:total_files_changed] += github_data["data"]["repository"]["pullRequest"]["changedFiles"]
+    @github_metrics_data[:total_commits] += github_data["data"]["repository"]["pullRequest"]["commits"]["totalCount"]
     pull_request_number = github_data["data"]["repository"]["pullRequest"]["number"]
 
     @merge_status[pull_request_number] = if github_data["data"]["repository"]["pullRequest"]["merged"]
