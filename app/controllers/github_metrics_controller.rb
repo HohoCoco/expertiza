@@ -90,8 +90,8 @@ class GithubMetricsController < ApplicationController
     end
 
     @github_metrics_data = {
-        :head_refs => {}, :parsed_data => {}, :total_additions => 0, :total_deletions => 0,
-        :total_commits => 0, :total_files_changed => 0, :merge_status => {}
+        :head_refs => {}, :total_additions => 0, :total_deletions => 0,
+        :total_commits => 0, :total_files_changed => 0, :merge_status => {}, :check_statuses => {}
     }
 
  #   @github_metrics_data = {
@@ -100,14 +100,13 @@ class GithubMetricsController < ApplicationController
  #  }
 
     #@head_refs = {}
-    #@parsed_data = {}
     #@total_additions = 0
     #@total_deletions = 0
     #@total_commits = 0
     #@total_files_changed = 0
-    @merge_status = {}
+    #@merge_status = {}
     #@check_statuses = {}
-
+    @parsed_data = {}
     @authors = {}
     @dates = {}
 
@@ -176,12 +175,12 @@ class GithubMetricsController < ApplicationController
   def process_github_authors_and_dates(author_name, commit_date)
     @authors[author_name] ||= 1
     @dates[commit_date] ||= 1
-    @github_metrics_data[:parsed_data[author_name]] ||= {}
-    @github_metrics_data[:parsed_data[author_name][commit_date]] = if @github_metrics_data[:parsed_data[author_name][commit_date]]
-                                                                     @github_metrics_data[:parsed_data[author_name][commit_date]] + 1
-                                                                   else
-                                                                     1
-                                                                   end
+    @parsed_data[author_name] ||= {}
+    @parsed_data[author_name][commit_date] = if @parsed_data[author_name][commit_date]
+                                               @parsed_data[author_name][commit_date] + 1
+                                             else
+                                               1
+                                             end
   end
 
   def parse_github_pull_request_data(github_data)
@@ -223,11 +222,11 @@ class GithubMetricsController < ApplicationController
 
   def organize_commit_dates
     @dates.each_key do |date|
-      @github_metrics_data[:parsed_data].each_value do |commits|
+      @parsed_data.each_value do |commits|
         commits[date] ||= 0
       end
     end
-    @github_metrics_data[:parsed_data].each {|author, commits| @github_metrics_data[:parsed_data[author]] = Hash[commits.sort_by {|date, _commit_count| date }] }
+    @parsed_data.each {|author, commits| @parsed_data[author] = Hash[commits.sort_by {|date, _commit_count| date }] }
   end
 
   def team_statistics(github_data)
