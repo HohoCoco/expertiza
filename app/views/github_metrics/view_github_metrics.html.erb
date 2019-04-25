@@ -35,7 +35,7 @@
     <li>
       <div>Merge statuses:</div>
       <ul>
-        <% @github_metrics_data[:merge_status].each do |k, v| %>
+        <% @github_metrics_data[:@merge_status].each do |k, v| %>
           <li>Pull Request Number <%= k %> has status: <%= v %> </li>
         <% end %>
       </ul>
