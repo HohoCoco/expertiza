@@ -105,7 +105,7 @@ class GithubMetricsController < ApplicationController
     #@total_deletions = 0
     #@total_commits = 0
     #@total_files_changed = 0
-    #@merge_status = {}
+    @merge_status = {}
     #@check_statuses = {}
 
     @authors = {}
@@ -237,7 +237,7 @@ class GithubMetricsController < ApplicationController
     @github_metrics_data[:total_commits] += github_data["data"]["repository"]["pullRequest"]["commits"]["totalCount"]
     pull_request_number = github_data["data"]["repository"]["pullRequest"]["number"]
 
-    @merge_status[pull_request_number] = if github_data["data"]["repository"]["pullRequest"]["merged"]
+    @github_metrics_data[:merge_status[pull_request_number]] = if github_data["data"]["repository"]["pullRequest"]["merged"]
                                            "MERGED"
                                          else
                                            github_data["data"]["repository"]["pullRequest"]["mergeable"]
