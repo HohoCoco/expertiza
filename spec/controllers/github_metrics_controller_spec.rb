@@ -166,14 +166,14 @@
     before(:each) do
       allow(controller).to receive(:get_statuses_for_pull_request).and_return("check_status")
       controller.instance_variable_set(:@github_metrics_data[:head_refs], "1234" => "qwerty", "5678" => "asdfg")
-      controller.instance_variable_set(:@github_metrics_data[:check_statuses], {})
+      controller.instance_variable_set(:@check_statuses, {})
     end
 
     it 'gets and stores the statuses associated with head commits of PRs' do
       expect(controller).to receive(:get_statuses_for_pull_request).with("qwerty")
       expect(controller).to receive(:get_statuses_for_pull_request).with("asdfg")
       controller.retrieve_check_run_statuses
-      expect(controller.instance_variable_get(:@github_metrics_data[:check_statuses])).to eq("1234" => "check_status",
+      expect(controller.instance_variable_get(:@check_statuses)).to eq("1234" => "check_status",
                                                                        "5678" => "check_status")
     end
   end
@@ -459,7 +459,7 @@
       controller.instance_variable_set(:@github_metrics_data[:total_files_changed], 0)
       controller.instance_variable_set(:@github_metrics_data[:total_commits], 0)
       controller.instance_variable_set(:@github_metrics_data[:head_refs], [])
-      controller.instance_variable_set(:@github_metrics_data[:@merge_status], [])
+      controller.instance_variable_set(:@merge_status, [])
     end
 
     it 'parses team data from github data for merged pull Request' do
@@ -487,7 +487,7 @@
       expect(controller.instance_variable_get(:@github_metrics_data[:total_deletions])).to eq(1)
       expect(controller.instance_variable_get(:@github_metrics_data[:total_files_changed])).to eq(3)
       expect(controller.instance_variable_get(:@github_metrics_data[:total_commits])).to eq(16)
-      expect(controller.instance_variable_get(:@github_metrics_data[:@merge_status])[8]).to eq("MERGED")
+      expect(controller.instance_variable_get(:@merge_status)[8]).to eq("MERGED")
     end
 
     it 'parses team data from github data for non-merged pull Request' do
@@ -515,7 +515,7 @@
       expect(controller.instance_variable_get(:@github_metrics_data[:total_deletions])).to eq(1)
       expect(controller.instance_variable_get(:@github_metrics_data[:total_files_changed])).to eq(3)
       expect(controller.instance_variable_get(:@github_metrics_data[:total_commits])).to eq(16)
-      expect(controller.instance_variable_get(:@github_metrics_data[:@merge_status])[8]).to eq(true)
+      expect(controller.instance_variable_get(:@merge_status)[8]).to eq(true)
     end
   end
 

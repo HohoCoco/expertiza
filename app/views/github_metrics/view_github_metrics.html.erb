@@ -35,18 +35,18 @@
     <li>
       <div>Merge statuses:</div>
       <ul>
-        <% @github_metrics_data[:@merge_status].each do |k, v| %>
+        <% @merge_status.each do |k, v| %>
           <li>Pull Request Number <%= k %> has status: <%= v %> </li>
         <% end %>
       </ul>
     </li>
     <li>
       <span>Check Statuses:</span>
-      <% if @github_metrics_data[:check_statuses].empty? %>
+      <% if @check_statuses.empty? %>
         <span>NA</span>
       <% else %>
         <ul>
-          <% @github_metrics_data[:check_statuses].each do |pull_number, check_status| %>
+          <% @check_statuses.each do |pull_number, check_status| %>
             <li>
               <div>Pull request: <%= pull_number %></div>
               <div>Overall Status: <span class=<%= status_classes[check_status["state"]] %>><%= check_status["state"] %></span></div>
