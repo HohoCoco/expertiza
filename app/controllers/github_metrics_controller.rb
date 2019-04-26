@@ -34,7 +34,7 @@ class GithubMetricsController < ApplicationController
       hyperlink_data["repository_name"] = submission_hyperlink_tokens.pop
       hyperlink_data["owner_name"] = submission_hyperlink_tokens.pop
       github_data = get_pull_request_details(hyperlink_data)
-      @github_metrics_data[:head_refs[hyperlink_data["pull_request_number"]]] = {
+      @github_metrics_data[:head_refs][hyperlink_data["pull_request_number"]] = {
           head_commit: github_data["data"]["repository"]["pullRequest"]["headRefOid"],
           owner: hyperlink_data["owner_name"],
           repository: hyperlink_data["repository_name"]
@@ -77,7 +77,7 @@ class GithubMetricsController < ApplicationController
 
   def retrieve_check_run_statuses
     @github_metrics_data[:head_refs].each do |pull_number, pr_object|
-      @github_metrics_data[:check_statuses[pull_number]] = get_statuses_for_pull_request(pr_object)
+      @github_metrics_data[:check_statuses][pull_number] = get_statuses_for_pull_request(pr_object)
     end
   end
 
@@ -91,7 +91,7 @@ class GithubMetricsController < ApplicationController
 
     @github_metrics_data = {
         :head_refs => {}, :parsed_data => {}, :total_additions => 0, :total_deletions => 0,
-        :total_commits => 0, :total_files_changed => 0, :merge_status => {}
+        :total_commits => 0, :total_files_changed => 0, :merge_status => {}, :check_statuses => {}
     }
 
  #   @github_metrics_data = {
@@ -105,7 +105,7 @@ class GithubMetricsController < ApplicationController
     #@total_deletions = 0
     #@total_commits = 0
     #@total_files_changed = 0
-    @merge_status = {}
+    #@merge_status = {}
     #@check_statuses = {}
 
     @authors = {}
@@ -176,9 +176,9 @@ class GithubMetricsController < ApplicationController
   def process_github_authors_and_dates(author_name, commit_date)
     @authors[author_name] ||= 1
     @dates[commit_date] ||= 1
-    @github_metrics_data[:parsed_data[author_name]] ||= {}
-    @github_metrics_data[:parsed_data[author_name][commit_date]] = if @github_metrics_data[:parsed_data[author_name][commit_date]]
-                                                                     @github_metrics_data[:parsed_data[author_name][commit_date]] + 1
+    @github_metrics_data[:parsed_data][author_name] ||= {}
+    @github_metrics_data[:parsed_data][author_name][commit_date] = if @github_metrics_data[:parsed_data][author_name][commit_date]
+                                                                     @github_metrics_data[:parsed_data][author_name][commit_date] + 1
                                                                    else
                                                                      1
                                                                    end
@@ -227,7 +227,7 @@ class GithubMetricsController < ApplicationController
         commits[date] ||= 0
       end
     end
-    @github_metrics_data[:parsed_data].each {|author, commits| @github_metrics_data[:parsed_data[author]] = Hash[commits.sort_by {|date, _commit_count| date }] }
+    @github_metrics_data[:parsed_data].each {|author, commits| @github_metrics_data[:parsed_data][author] = Hash[commits.sort_by {|date, _commit_count| date }] }
   end
 
   def team_statistics(github_data)
@@ -237,7 +237,7 @@ class GithubMetricsController < ApplicationController
     @github_metrics_data[:total_commits] += github_data["data"]["repository"]["pullRequest"]["commits"]["totalCount"]
     pull_request_number = github_data["data"]["repository"]["pullRequest"]["number"]
 
-    @github_metrics_data[:merge_status[pull_request_number]] = if github_data["data"]["repository"]["pullRequest"]["merged"]
+    @github_metrics_data[:merge_status][pull_request_number] = if github_data["data"]["repository"]["pullRequest"]["merged"]
                                            "MERGED"
                                          else
                                            github_data["data"]["repository"]["pullRequest"]["mergeable"]
